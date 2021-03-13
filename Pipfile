@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+discord = "*"
+pytils = "*"
+emoji = "*"
+d20 = "*"
+pika = "*"
+aiosqlite = "*"
+simplejson = "*"
+aio-pika = "*"
+colorlog = "*"
+
+[requires]
+python_version = "3.8"
