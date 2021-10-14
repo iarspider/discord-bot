@@ -15,7 +15,7 @@ import emoji
 import simplejson
 # import aiosqlite
 from aio_pika import connect, IncomingMessage
-from discord import Member, PartialEmoji
+from discord import Member, Reaction, PartialEmoji
 from discord.ext import tasks, commands
 from discord.ext.commands import Context
 from discord.utils import get
@@ -273,7 +273,7 @@ async def on_rabbit_message(message: IncomingMessage):
     logger.debug("RabbitMQ message received!")
     body_ = message.body
     body = simplejson.loads(body_)
-    logger.debug("Action is:", body['action'])
+    logger.debug("Action is: %s", body['action'])
     if body['action'] == 'send':
         send(body)
 
