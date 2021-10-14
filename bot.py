@@ -15,7 +15,7 @@ import emoji
 import simplejson
 # import aiosqlite
 from aio_pika import connect, IncomingMessage
-from discord import Member, Reaction, PartialEmoji
+from discord import Member, PartialEmoji
 from discord.ext import tasks, commands
 from discord.ext.commands import Context
 from discord.utils import get
