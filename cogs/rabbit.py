@@ -12,7 +12,7 @@ from aio_pika.abc import AbstractIncomingMessage
 from config import *
 
 
-class RabbitCog(commands.Cog):
+class RabbitCog(commands.Cog, name="Rabbit"):
     def __init__(self, bot):
         self.bot = bot
         self.rabbit = None

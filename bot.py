@@ -34,6 +34,7 @@ class MyBot(discord.Bot):
         raise NotImplementedError()
 
     data = {}
+    setup_ = False
 
 
 discord_bot = MyBot(help_command=None)
@@ -123,6 +124,12 @@ async def on_ready():
     )
 
     discord_bot.data["discord_roles"] = discord_roles
+
+    if not discord_bot.setup_:
+        cog = discord_bot.get_cog("Rabbit")
+        # noinspection PyUnresolvedReferences
+        await cog.setup()
+        discord_bot.setup_ = True
 
 
 @logger.catch
