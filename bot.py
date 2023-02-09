@@ -142,7 +142,7 @@ def main():
     token = str(os.getenv("TOKEN"))
     discord_bot.data["rabbit_url"] = str(os.getenv("RABBIT"))
 
-    setup_logging("discord.log", True, True)
+    setup_logging("discord.log", False, True)
     # all_cogs = ("dice", "polls", "rabbit", "roles")
     # all_cogs = ("dice", "polls", "rabbit", "roles")
     # all_cogs = ("dice", "polls", "rabbit", "roles")
