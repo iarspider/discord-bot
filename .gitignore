@@ -30,3 +30,6 @@ Pipfile.lock
 # Our configuration files
 config.py
 .env
+
+*.log
+message_map.json

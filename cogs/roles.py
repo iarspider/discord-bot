@@ -62,11 +62,11 @@ class RolesCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.roles: List[Dict[str, str]] = roles
-        self.guild = None
+        self.bot.discord_guild = None
 
     def build_view(self) -> (discord.ui.View, str):
         msg_txt_1 = (
-            f"""Приветствую тебя в Паучьем Логове!"""
+            """Приветствую тебя в Паучьем Логове!"""
             """Нажми на кнопку с соответствующим смайликом, если ..."""
         )
 
@@ -93,7 +93,7 @@ class RolesCog(commands.Cog):
         # Loop through the list of roles and add a new button to the view for each role.
         for r in self.roles:
             # Get the role from the guild by ID.
-            role = self.guild.get_role(int(r["id"]))
+            role = self.bot.discord_guild.get_role(int(r["id"]))
             view.add_item(RoleButton(role, r["emote"]))
 
         return view, msg_txt
@@ -116,11 +116,10 @@ class RolesCog(commands.Cog):
         it will be loaded and the bot will start watching for button clicks again.
         """
         # Add the view to the bot so that it will watch for button interactions.
-        self.guild: discord.Guild = self.bot.data["discord_guild"]
 
         for i, role in enumerate(copy.deepcopy(roles)):
             role_id = discord.utils.find(
-                lambda x: x.name == role["role"], self.guild.roles
+                lambda x: x.name == role["role"], self.bot.discord_guild.roles
             )
             if role_id is None:
                 logger.warning(f"Role {role['role']} not found!")
