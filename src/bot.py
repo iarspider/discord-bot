@@ -125,19 +125,10 @@ class InterceptHandler(logging.Handler):
         )
 
 
-def setup_logging(logfile, debug, color):
+def setup_logging(debug):
     loglevel = logging.DEBUG if debug else logging.INFO
     logger.remove()
     logger.add(sys.stderr, level=loglevel, backtrace=True, diagnose=True)
-    logger.add(
-        logfile,
-        level=loglevel,
-        rotation="1 day",
-        compression="zip",
-        retention="1 week",
-        backtrace=True,
-        diagnose=True,
-    )
 
     logging.basicConfig(handlers=[InterceptHandler()], level=0)
     logging.getLogger("discord").setLevel(loglevel)
@@ -156,7 +147,7 @@ async def main():
     discord_bot = MyBot(help_command=None, intents=intents)
     discord_bot.data = {}
 
-    setup_logging("discord.log", False, True)
+    setup_logging(False)
     all_cogs = (
         "dice",
         "roles",

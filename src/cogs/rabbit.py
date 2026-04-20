@@ -76,7 +76,7 @@ class RabbitCog(commands.Cog, name="Rabbit"):
     def __init__(self, bot):
         self.bot: MyBotProtocol = bot
         self.rabbit = None
-        # asyncio.ensure_future(self.setup())
+        asyncio.ensure_future(self.setup())
 
     async def setup(self):
         self.rabbit = await connect_robust(settings.rabbitmq_dsn)

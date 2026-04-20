@@ -1,7 +1,7 @@
-FROM ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+FROM python:3.14-slim AS builder
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-RUN groupadd --system --gid 999 nonroot \
- && useradd --system --gid 999 --uid 999 --create-home nonroot
+ENV UV_PYTHON_DOWNLOADS=0
 
 WORKDIR /app
 
@@ -14,15 +14,25 @@ ENV PATH="/app/.venv/bin:$PATH"
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-install-project
+    uv sync --locked --no-install-project --no-editable
 
 COPY . /app
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-editable
 
+FROM python:3.14-slim
+
+RUN groupadd --system --gid 999 nonroot \
+ && useradd --system --gid 999 --uid 999 --create-home nonroot
+
+COPY --from=builder /app/.venv /app/.venv
+COPY . /app
+
 ENTRYPOINT []
 
 USER nonroot
 
-CMD ["python", "main.py"]
+WORKDIR /app
+
+CMD [".venv/bin/python", "main.py"]
