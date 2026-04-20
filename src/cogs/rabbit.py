@@ -10,7 +10,7 @@ from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
 from discord.ext import commands
 from loguru import logger
-from pydantic import BaseModel, Field, field_validator, PrivateAttr, model_validator, ValidationError
+from pydantic import BaseModel, Field, field_validator, PrivateAttr, model_validator, ValidationError, Base64Bytes
 
 from src.config import settings
 
@@ -32,8 +32,7 @@ class MyBotProtocol(Protocol):
 
 class Attachment(BaseModel):
     filename: str
-    data_b64: str
-    _decoded_bytes: bytes = PrivateAttr()
+    data: Base64Bytes
 
     @field_validator("filename")
     @classmethod
@@ -47,21 +46,9 @@ class Attachment(BaseModel):
 
         return v
 
-    @model_validator(mode="after")
-    def decode_and_cache(self) -> Attachment:
-        try:
-            data = base64.b64decode(self.data_b64, validate=True)
-            if len(data) > MAX_BYTES:
-                raise ValueError("Attachment too large")
-
-            self._decoded_bytes = data
-        except Exception as e:
-            raise ValueError("data_b64 must be valid base64") from e
-        return self
-
     @property
     def att_io(self):
-        return discord.File(BytesIO(self._decoded_bytes), filename=self.filename)
+        return discord.File(BytesIO(self.data), filename=self.filename)
 
 
 class SendDiscordMessage(BaseModel):
@@ -79,12 +66,13 @@ class RabbitCog(commands.Cog, name="Rabbit"):
         asyncio.ensure_future(self.setup())
 
     async def setup(self):
-        self.rabbit = await connect_robust(settings.rabbitmq_dsn)
+        self.rabbit = await connect_robust(str(settings.rabbitmq_dsn))
         rabbit_channel = await self.rabbit.channel()
         await rabbit_channel.set_qos(prefetch_count=10)
         rabbit_queue = await rabbit_channel.declare_queue(
             name="discord", durable=True, arguments={"x-message-ttl": 60000}
         )
+        logger.info("Connected to RabbitMQ server")
         await rabbit_queue.consume(self.on_rabbit_message)
 
     async def on_rabbit_message(self, message: AbstractIncomingMessage) -> None:
