@@ -25,4 +25,4 @@ ENTRYPOINT []
 
 USER nonroot
 
-CMD ["python", "src/bot.py"]
+CMD ["python", "main.py"]
