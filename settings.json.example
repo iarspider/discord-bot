@@ -1,0 +1,18 @@
+{
+  "telegram_channel": "",
+  "discord_channel_name": "",
+  "discord_debug_channel_name": "",
+  "discord_guild_name": "",
+  "discord_news_channel_name": "",
+  "discord_role_names": [],
+  "discord_welcome_channel_name": "",
+  "roles": [
+    {
+      "emote": "",
+      "type": "",
+      "description": "",
+      "name": ""
+    },
+    ...
+  ]
+}
