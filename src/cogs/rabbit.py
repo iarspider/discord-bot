@@ -77,7 +77,8 @@ class RabbitCog(commands.Cog, name="Rabbit"):
 
     async def on_rabbit_message(self, message: AbstractIncomingMessage) -> None:
         logger.debug("RabbitMQ message received!")
-        now = datetime.datetime.now().astimezone()
+        # TODO: timezone support
+        now = datetime.datetime.now()#.astimezone()
 
         async with message.process():
             try:
