@@ -2,6 +2,7 @@ import asyncio
 import base64
 import datetime
 import os
+import io
 from typing import Literal, Protocol
 
 import discord
@@ -129,7 +130,9 @@ class RabbitCog(commands.Cog, name="Rabbit"):
         logger.debug("Ready to send...")
         await discord_channel.send(
             content=body,
-            file=discord.File(message.attachment.data, message.attachment.filename),
+            file=discord.File(
+                io.BytesIO(message.attachment.data), message.attachment.filename
+            ),
         )
         logger.debug("... done")
 
