@@ -35,21 +35,27 @@ class MyBot(discord.Bot):
     rabbit_queue = None
 
     async def on_ready(self):
-        logger.debug(
-            "Guilds:\n" + "\n".join(f"* {x.name}#{x.id}" for x in self.guilds)
-        )
+        logger.debug("Guilds:\n" + "\n".join(f"* {x.name}#{x.id}" for x in self.guilds))
 
         self.discord_guild = discord.utils.find(
             lambda g: g.name == settings.discord_guild_name, self.guilds
         )
 
         if self.discord_guild is None:
-            raise RuntimeError(f"Failed to join Discord guild {settings.discord_guild_name}!")
+            raise RuntimeError(
+                f"Failed to join Discord guild {settings.discord_guild_name}!"
+            )
 
         self.discord_channel = self.find_channel(settings.discord_channel_name)
-        self.discord_welcome_channel = self.find_channel(settings.discord_welcome_channel_name)
-        self.discord_news_channel = self.find_channel(settings.discord_news_channel_name)
-        self.discord_debug_channel = self.find_channel(settings.discord_debug_channel_name)
+        self.discord_welcome_channel = self.find_channel(
+            settings.discord_welcome_channel_name
+        )
+        self.discord_news_channel = self.find_channel(
+            settings.discord_news_channel_name
+        )
+        self.discord_debug_channel = self.find_channel(
+            settings.discord_debug_channel_name
+        )
 
         for discord_role_name in settings.discord_role_names:
             discord_role: Optional[discord.Role] = discord.utils.find(
@@ -86,9 +92,7 @@ class MyBot(discord.Bot):
         pass
 
     def find_channel(self, name):
-        res = discord.utils.find(
-            lambda c: c.name == name, self.discord_guild.channels
-        )
+        res = discord.utils.find(lambda c: c.name == name, self.discord_guild.channels)
 
         if res is None:
             raise RuntimeError(f"Failed to join Discord channel {name}!")
@@ -137,9 +141,6 @@ def setup_logging(debug):
         logger.info("Debug logging is ON")
 
 
-
-
-
 @logger.catch
 async def main():
     global discord_bot
@@ -147,7 +148,7 @@ async def main():
     discord_bot = MyBot(help_command=None, intents=intents)
     discord_bot.data = {}
 
-    setup_logging(False)
+    setup_logging(settings.debug)
     all_cogs = (
         "dice",
         "roles",

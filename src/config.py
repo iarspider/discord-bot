@@ -1,7 +1,12 @@
 from typing import Literal
 
 from pydantic import Field, SecretStr, AmqpDsn
-from pydantic_settings import BaseSettings, JsonConfigSettingsSource, SettingsConfigDict, PydanticBaseSettingsSource
+from pydantic_settings import (
+    BaseSettings,
+    JsonConfigSettingsSource,
+    SettingsConfigDict,
+    PydanticBaseSettingsSource,
+)
 
 
 class Role(BaseSettings):
@@ -10,8 +15,10 @@ class Role(BaseSettings):
     description: str
     name: str
 
+
 class ResolvedRole(Role):
     role_id: int
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", json_file="settings.json")
@@ -30,6 +37,7 @@ class Settings(BaseSettings):
 
     roles: list[Role]
 
+    debug: bool = False
 
     @classmethod
     def settings_customise_sources(
@@ -41,5 +49,6 @@ class Settings(BaseSettings):
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         return JsonConfigSettingsSource(settings_cls), dotenv_settings
+
 
 settings = Settings()

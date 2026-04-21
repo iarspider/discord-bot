@@ -2,7 +2,6 @@ import asyncio
 import base64
 import datetime
 import os
-from io import BytesIO
 from typing import Literal, Protocol
 
 import discord
@@ -10,7 +9,7 @@ from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
 from discord.ext import commands
 from loguru import logger
-from pydantic import BaseModel, Field, field_validator, PrivateAttr, model_validator, ValidationError, Base64Bytes
+from pydantic import BaseModel, field_validator, ValidationError, field_serializer
 
 from src.config import settings
 
@@ -26,13 +25,12 @@ class MyBotProtocol(Protocol):
     discord_roles: dict[str, discord.Role] = {}
     discord_guild: discord.Guild | None = None
 
-    async def wait_until_ready(self):
-        ...
+    async def wait_until_ready(self): ...
 
 
 class Attachment(BaseModel):
     filename: str
-    data: Base64Bytes
+    data: bytes
 
     @field_validator("filename")
     @classmethod
@@ -46,17 +44,24 @@ class Attachment(BaseModel):
 
         return v
 
-    @property
-    def att_io(self):
-        return discord.File(BytesIO(self.data), filename=self.filename)
+    @field_validator("data", mode="before")
+    @classmethod
+    def parse_data(cls, v):
+        if isinstance(v, str):
+            return base64.b64decode(v)
+        return v
+
+    @field_serializer("data", when_used="json")
+    def serialize_data_base64(self, value: bytes) -> str:
+        return base64.b64encode(value).decode("ascii")
 
 
 class SendDiscordMessage(BaseModel):
     expires_at: datetime.datetime
     action: Literal["send"]
-    attachment: Attachment | None = Field(None)
+    attachment: Attachment | None = None
     body: str
-    channel: str | None = Field(None)
+    channel: str | None = None
 
 
 class RabbitCog(commands.Cog, name="Rabbit"):
@@ -78,7 +83,7 @@ class RabbitCog(commands.Cog, name="Rabbit"):
     async def on_rabbit_message(self, message: AbstractIncomingMessage) -> None:
         logger.debug("RabbitMQ message received!")
         # TODO: timezone support
-        now = datetime.datetime.now()#.astimezone()
+        now = datetime.datetime.now().astimezone()
 
         async with message.process():
             try:
@@ -117,13 +122,15 @@ class RabbitCog(commands.Cog, name="Rabbit"):
                 self.bot.discord_guild.channels,
             )
             if discord_channel is None:
-                logger.error(
-                    f"RabbitCog: Discord channel {channel_name} not found!"
-                )
+                logger.error(f"RabbitCog: Discord channel {channel_name} not found!")
         else:
             discord_channel = self.bot.discord_channel
+
         logger.debug("Ready to send...")
-        asyncio.ensure_future(discord_channel.send(content=message.body, file=message.attachment.att_io))
+        await discord_channel.send(
+            content=body,
+            file=discord.File(message.attachment.data, message.attachment.filename),
+        )
         logger.debug("... done")
 
     def cog_unload(self):

@@ -96,7 +96,9 @@ class TgCog(commands.Cog):
         msk_tz = pytz.timezone("Europe/Moscow")
         for timestamp, style in timestamp_mentions:
             dt = datetime.fromtimestamp(int(timestamp), tz=msk_tz)
-            formatted_time = self.format_timestamp(int(timestamp), dt, style if style else "F")
+            formatted_time = self.format_timestamp(
+                int(timestamp), dt, style if style else "F"
+            )
 
             content = re.sub(
                 f'<t:{timestamp}:{style if style else ""}>',
@@ -150,11 +152,20 @@ class TgCog(commands.Cog):
 
         try:
             if not message_id:
-                sent_message = await tg_bot.send_message(telegram_channel, clean_text, parse_mode=telegram.constants.ParseMode.HTML)
+                sent_message = await tg_bot.send_message(
+                    telegram_channel,
+                    clean_text,
+                    parse_mode=telegram.constants.ParseMode.HTML,
+                )
                 self.message_map[message.id] = sent_message.message_id
                 self.save_message_map()
             else:
-                await tg_bot.edit_message_text(clean_text, telegram_channel, message_id, parse_mode=telegram.constants.ParseMode.HTML)
+                await tg_bot.edit_message_text(
+                    clean_text,
+                    telegram_channel,
+                    message_id,
+                    parse_mode=telegram.constants.ParseMode.HTML,
+                )
         except TelegramError as e:
             logger.exception(f"Error sending message to Telegram: {e}")
 

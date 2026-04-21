@@ -1,10 +1,8 @@
-import emoji
-import copy
 import itertools
-from typing import List, Dict
+from typing import List
 
 import discord
-
+import emoji
 from discord.ext import commands
 from loguru import logger
 
@@ -98,9 +96,7 @@ class RolesCog(commands.Cog):
         return view, msg_txt
 
     # Pass a list of guild IDs to restrict usage to the supplied guild IDs.
-    @commands.slash_command(
-        description="Показывает меню выбора ролей"
-    )
+    @commands.slash_command(description="Показывает меню выбора ролей")
     async def menu(self, ctx: discord.ApplicationContext):
         """Slash command to post a new view with a button for each role."""
 
@@ -124,7 +120,9 @@ class RolesCog(commands.Cog):
                 logger.warning(f"Role {role.name} not found!")
                 continue
 
-            self.roles.append(ResolvedRole(role_id=discord_role.id, **role.model_dump()))
+            self.roles.append(
+                ResolvedRole(role_id=discord_role.id, **role.model_dump())
+            )
 
         view, _ = self.build_view()
         self.bot.add_view(view)
