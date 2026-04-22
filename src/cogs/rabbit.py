@@ -10,7 +10,7 @@ from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
 from discord.ext import commands
 from loguru import logger
-from pydantic import BaseModel, field_validator, ValidationError, field_serializer
+from pydantic import BaseModel, field_validator, ValidationError, field_serializer, AwareDatetime
 
 from src.config import settings
 
@@ -58,7 +58,7 @@ class Attachment(BaseModel):
 
 
 class SendDiscordMessage(BaseModel):
-    expires_at: datetime.datetime
+    expires_at: AwareDatetime
     action: Literal["send"]
     attachment: Attachment | None = None
     body: str
@@ -83,15 +83,17 @@ class RabbitCog(commands.Cog, name="Rabbit"):
 
     async def on_rabbit_message(self, message: AbstractIncomingMessage) -> None:
         logger.debug("RabbitMQ message received!")
-        # TODO: timezone support
         now = datetime.datetime.now().astimezone()
 
         async with message.process():
+            logger.info("Received message", message.body)
             try:
                 decoded_message = SendDiscordMessage.model_validate_json(message.body)
             except ValidationError:
                 logger.exception("Message decoding failed")
                 return
+
+            logger.debug(f"Now is {now} with tzinfo {now.tzinfo}; expires_at is {decoded_message.expires_at} with tzinfo {decoded_message.expires_at.tzinfo}")
 
             remaining = (decoded_message.expires_at - now).total_seconds()
             if remaining <= 0:
@@ -127,13 +129,13 @@ class RabbitCog(commands.Cog, name="Rabbit"):
         else:
             discord_channel = self.bot.discord_channel
 
-        logger.debug("Ready to send...")
-        await discord_channel.send(
-            content=body,
-            file=discord.File(
-                io.BytesIO(message.attachment.data), message.attachment.filename
-            ),
-        )
+        logger.debug(f"Ready to send: {body} with attachment {message.attachment.filename}")
+#        await discord_channel.send(
+#            content=body,
+#            file=discord.File(
+#                io.BytesIO(message.attachment.data), message.attachment.filename
+#            ),
+#        )
         logger.debug("... done")
 
     def cog_unload(self):
