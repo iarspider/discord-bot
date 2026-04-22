@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     roles: list[Role]
 
     debug: bool = False
+    dryrun: bool = Field(default=False, alias="DRY_RUN")
 
     @classmethod
     def settings_customise_sources(

@@ -130,12 +130,17 @@ class RabbitCog(commands.Cog, name="Rabbit"):
             discord_channel = self.bot.discord_channel
 
         logger.debug(f"Ready to send: {body} with attachment {message.attachment.filename}")
-#        await discord_channel.send(
-#            content=body,
-#            file=discord.File(
-#                io.BytesIO(message.attachment.data), message.attachment.filename
-#            ),
-#        )
+
+        if settings.dryrun:
+            logger.warning("Dry-run mode enabled, not sending message")
+            return
+
+        await discord_channel.send(
+            content=body,
+            file=discord.File(
+                io.BytesIO(message.attachment.data), message.attachment.filename
+            ),
+        )
         logger.debug("... done")
 
     def cog_unload(self):
